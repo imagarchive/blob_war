@@ -6,7 +6,7 @@ void Strategy::applyMove (const movement& mv) {
 }
 
 void Strategy::removeMove (const movement& mv){
-    applyMove(mv.nx,mv.ny,mv.ox,mv.oy);
+    applyMove(movement(mv.nx,mv.ny,mv.ox,mv.oy));
 }
 
 Sint32 Strategy::estimateCurrentScore () const {
@@ -50,17 +50,18 @@ end_choice:
      return;
 }
 
-movementEval min_max(Uint16 level, int sign){
+movementEval Strategy::min_max(Uint16 level, int sign){
     if(level == _max_level) { return movementEval(estimateCurrentScore()); }
     
-    vector<movement>& validMoves = computeValidMoves();
+    vector<movement> validMoves = {};
+    validMoves = computeValidMoves(validMoves);
     
     movementEval eval(sign * __INT32_MAX__); // TODO check
     for(movement& mv : validMoves){
         applyMove(mv);
         
-        movementEval moveEval = min_max(level + 1, -i);
-        if(i * eval.eval > i * moveEval.eval){
+        movementEval moveEval = min_max(level + 1, -sign);
+        if(sign * eval.eval > sign * moveEval.eval){
             eval = moveEval;
         }
         removeMove(mv);

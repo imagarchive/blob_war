@@ -13,11 +13,11 @@ struct movementEval
     movementEval(){}
     
     movementEval(const movementEval & mv)
-            :m(mv.m), eavl(mv.eval) {}
+            :m(mv.m), eval(mv.eval) {}
     movementEval(const movement& mov, const Sint32 ev)
-            :m(mov), eavl(ev){}
+            :m(mov), eval(ev){}
     movementEval(const Sint32 ev)
-            :m(movement{0,0,0,0}), eavl(ev){}
+            :m(movement{0,0,0,0}), eval(ev){}
     
     movementEval& operator=(const movementEval& mv)
         {m = mv.m; eval = mv.eval; return *this;}
