@@ -1,9 +1,12 @@
 #include "strategy.h"
 
 
-
 void Strategy::applyMove (const movement& mv) {
         // To be completed...
+}
+
+void Strategy::removeMove (const movement& mv){
+    applyMove(mv.nx,mv.ny,mv.ox,mv.oy);
 }
 
 Sint32 Strategy::estimateCurrentScore () const {
@@ -17,6 +20,12 @@ vector<movement>& Strategy::computeValidMoves (vector<movement>& valid_moves) co
 }
 
 void Strategy::computeBestMove () {
+    // TODO increase max level
+    /*
+    _max_level = 1;
+
+    */
+
     // To be improved...
 
     //The following code finds a valid move.
@@ -39,5 +48,23 @@ void Strategy::computeBestMove () {
 end_choice:
      _saveBestMove(mv);
      return;
+}
+
+movementEval min_max(Uint16 level, int sign){
+    if(level == _max_level) { return movementEval(estimateCurrentScore()); }
+    
+    vector<movement>& validMoves = computeValidMoves();
+    
+    movementEval eval(sign * __INT32_MAX__); // TODO check
+    for(movement& mv : validMoves){
+        applyMove(mv);
+        
+        movementEval moveEval = min_max(level + 1, -i);
+        if(i * eval.eval > i * moveEval.eval){
+            eval = moveEval;
+        }
+        removeMove(mv);
+    }
+    return eval;
 }
 
