@@ -60,7 +60,7 @@ vector<movement>& Strategy::computeValidMoves (vector<movement>& valid_moves, bi
     //iterate on starting position
     for(mv.ox = 0 ; mv.ox < 8 ; mv.ox++) {
         for(mv.oy = 0 ; mv.oy < 8 ; mv.oy++) {
-            //if (blobs.get(mv.ox, mv.oy) == (int) _current_player) {
+            if (blobs.get(mv.ox, mv.oy) != -1) {
                 //iterate on possible destinations
                 for(mv.nx = std::max(0,mv.ox-2) ; mv.nx <= std::min(7,mv.ox+2) ; mv.nx++) {
                     for(mv.ny = std::max(0,mv.oy-2) ; mv.ny <= std::min(7,mv.oy+2) ; mv.ny++) {
@@ -70,7 +70,7 @@ vector<movement>& Strategy::computeValidMoves (vector<movement>& valid_moves, bi
                         }
                     }
                 }
-            //}
+            }
         }
     }
 
@@ -82,7 +82,8 @@ void Strategy::_find_other_player(){
         for(Uint8 oy = 0 ; oy < 8 ; oy++) {
             Sint16 b = _blobs.get(ox, oy);
             if (b != (int) _current_player && b != -1){
-                _other_player = b;
+                _other_player = (Uint16) b;
+                return;
             }
         }
     }
@@ -92,7 +93,7 @@ void Strategy::computeBestMove () {
 
     _find_other_player();
     _max_level = 1;
-    while (true){
+    while (_max_level < 2){
         movement result = min_max_seq(_blobs,0,_current_player).m;
         _saveBestMove(result);
 #ifdef DEBUG
@@ -138,16 +139,19 @@ movementEval Strategy::min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint1
     std::vector<movement> validMoves = {};
     validMoves = computeValidMoves(validMoves, blobs);
 
-    std::cout << validMoves.size();
+    //std::cout << "\n" << validMoves.size() << "\n";
 
     movementEval eval(sign * std::numeric_limits<std::int32_t>::max());
 
     for(const movement& mv : validMoves){
+        std::cout << "\n" << "TEST : " << blobs.get(mv.ox, mv.oy) << "\n";
         if(blobs.get(mv.ox, mv.oy) != (int) player) { continue; }
+        std::cout << "\n" << "VALID !!!" << "\n";
         applyMove(mv, blobs);
 
         movementEval moveEval = min_max_seq(blobs,level + 1, player == _current_player ? _other_player : _current_player);
-
+        std::cout << "\n" << eval.eval;
+        std::cout << "\n" << moveEval.eval;
         if ((sign * eval.eval) > (sign * moveEval.eval)) {
             eval = moveEval;
             eval.m = mv;
