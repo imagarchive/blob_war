@@ -5,6 +5,7 @@
 #include"common.h"
 #include"mouse.h"
 #include"font.h"
+#include <string_view>
 #ifdef SOUND
 #include"sound.h"
 #endif
@@ -15,17 +16,6 @@
 #include"board.h"
 #include"rules.h"
 #include"network.h"
-
-/** A strategy type  */
-
-enum struct StrategyType
-{
-	greedy,
-	minmax,
-	alphabeta,
-	alphabeta_par
-};
-
 
 /** this is the main game class. All objects are stored in it. */
 class blobwar {
@@ -83,7 +73,7 @@ class blobwar {
 	public:
 		//!you should lock this mutex when you modify blobs
 		pthread_mutex_t mutex;
-		
+
 		//!button to click when winning to go back to mainmenu
 		button *wingamebutton;
 
@@ -115,12 +105,12 @@ class blobwar {
 		//!The time that IA have to do their computations
 		int compute_time_IA;
 		//! The strategy type
-		StrategyType strategy_type;
+		std::string_view strategy_type;
 		/// constructor
 		blobwar();
 		/// destructor
 		~blobwar();
-		//! loads an image 
+		//! loads an image
 		SDL_Surface* image_load(string filename);
 		//! loads an image with an alpha channel
 		SDL_Surface* alpha_image_load(string filename);

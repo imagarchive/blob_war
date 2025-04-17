@@ -1,5 +1,6 @@
 #include "blobwar.h"
 #include <string>
+#include <string_view>
 
 /**
  *	\mainpage Documentation for blobwar
@@ -59,7 +60,7 @@ namespace
 	{
 		bool print_help;
 		int compute_time;
-		StrategyType strategy_type;
+		std::string_view strategy_type;
 		bool error;
 	};
 }
@@ -70,9 +71,8 @@ blobwar *game;
 int main(int argc, char **argv)
 {
 	/* CLI option parsing */
-	
-	cli_options cli{};
-	cli.compute_time = 1;
+
+	cli_options cli { false, 1, "greedy", false };
 
 	for (int i = 0; i != argc; ++i) {
 		std::string_view current = argv[i];
@@ -89,19 +89,7 @@ int main(int argc, char **argv)
 			if (i == (argc - 1)) {
 				cli.error = true;
 			} else {
-				std::string_view type = argv[++i];
-
-				if (type == "greedy") {
-					cli.strategy_type = StrategyType::greedy;
-				} else if (type == "minmax") {
-					cli.strategy_type = StrategyType::minmax;
-				} else if (type == "alphabeta") {
-					cli.strategy_type = StrategyType::alphabeta;
-				} else if (type == "alpabeta_par") {
-					cli.strategy_type = StrategyType::alphabeta_par;
-				} else {
-					cli.error = true;
-				}
+				cli.strategy_type = argv[++i];
 			}
 		}
 	}
@@ -119,13 +107,13 @@ int main(int argc, char **argv)
 	}
 
 	/* Main processes  */
-	
+
 	Uint32 new_ticks, diff;
 
 #ifdef DEBUG
 	std::cout << "Starting game" << std::endl;
 #endif
-	
+
 	// open video, sound, bugs buffer, ....
 	game = new blobwar();
 	game->compute_time_IA = cli.compute_time;

@@ -1,3 +1,4 @@
+#include <string_view>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -28,19 +29,20 @@ void saveBestMoveToShmem(movement& m)
  * - current player (an int)
  */
 int main(int argc, char **argv) {
-	
+
 #ifdef DEBUG
 	cout << "Starting launchStrategy" << endl;
 #endif
-	if(argc != 4) {
-		printf("Usage: ./launchStrategy blobs holes current_player\n");
+	if(argc != 5) {
+		printf("Usage: ./launchStrategy blobs holes current_player strategy\n");
 		printf("	blobs is a serialized bidiarray<Sint16> containing the blobs\n");
 		printf("	holes is a serialized bidiarray<bool> containing the holes\n");
 		printf("	current_player is an int indicating which player should play\n");
+		printf("	strategy the strategy to use\n");
 		return 1;
 	}
 	int i = 1;
-	
+
 	bidiarray<Sint16> blobs = bidiarray<Sint16>::deserialize(argv[i++]);
 	//blobs.display();
 	bidiarray<bool> holes = bidiarray<bool>::deserialize(argv[i++]);
@@ -48,16 +50,13 @@ int main(int argc, char **argv) {
 	int cplayer = atoi(argv[i++]);
 	//std::cout << "player: "<<cplayer<<std::endl;
 	void (*func)(movement&) = saveBestMoveToShmem;
-	
+	std::string_view strategy_type = argv[i];
+
 	shmem_init();
 	func = saveBestMoveToShmem;
-	
+
 	Strategy strategy(blobs, holes, cplayer, func);
-	strategy.computeBestMove();
-	
+	strategy.computeBestMove(std::move(strategy_type));
+
 	return 0;
 }
-
-
-
-
