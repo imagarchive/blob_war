@@ -23,7 +23,11 @@ void Strategy::computeBestMove () {
     // TODO increase max level
     /*
     _max_level = 1;
-
+    while (true){
+        _max_level += 1;
+        _saveBestMove(minmax(0,-1).m);
+    }
+    return;
     */
 
     // To be improved...
