@@ -313,6 +313,7 @@ void rules::compute_move() {
 	printf("Now fork: %s %s %s %s\n", "./launchStrategy", blobs.serialize().c_str(), holes.serialize().c_str(), cplayer.c_str());
 #endif
 	int childPid = fork();
+	//std::cout << "\n" << childPid << "\n";
 	if(childPid == 0) // Child process
 	{
 		execl("./launchStrategy", "./launchStrategy", blobs.serialize().c_str(), holes.serialize().c_str(), cplayer.c_str(), (char *)NULL);

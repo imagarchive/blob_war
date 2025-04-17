@@ -13,6 +13,9 @@ CC = g++
 # $(sort) remove duplicate object
 OBJS_ALL = $(sort $(OBJS) $(OBJS_launchComputation))
 
+# Default target: all
+all: blobwar launchStrategy
+
 blobwar: $(OBJS) launchStrategy
 	$(CC) $(OBJS) $(CFLAGS) -o blobwar $(LIBS)
 $(OBJS_ALL):	%.o:	%.cc common.h
