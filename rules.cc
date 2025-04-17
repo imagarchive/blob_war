@@ -26,7 +26,7 @@ Sint32 estimate(bidiarray<Sint16> &blobs) {
 void rules::display_position() {
 	for(Uint8 i = 0 ; i < 8 ; i++) {
 		for(Uint8 j = 0 ; j < 8 ; j++) {
-			if (holes.get(i, j)) { 
+			if (holes.get(i, j)) {
 				cout<<"o ";
 				continue;
 			}
@@ -55,11 +55,11 @@ bool player::is_computer() {
 }
 
 rules::rules(Uint16 type, board *b, Uint32 local_player_id) {
-	
+
 
 	gametype = type;
 
-	if (type == GAME4PMATCH) 
+	if (type == GAME4PMATCH)
 		number_of_players = 4;
 	else number_of_players = 2;
 	turn_number = 0;
@@ -95,7 +95,7 @@ rules::rules(Uint16 type, board *b, Uint32 local_player_id) {
 	}
 	//put the blobs in place on the board
 	game->bwboard->init(number_of_players);
-	
+
 
 	//now check for the type of game
 	if (type == GAME1P) {
@@ -238,7 +238,7 @@ void rules::do_move() {
 	cout<<"player: "<<(CURRENT_PLAYER)<<" moving from: "<<(Uint32)ox<<","<<(Uint32)oy<<" to "<<(Uint32)nx<<","<<(Uint32)ny<<endl;
 #endif
 	if (!valid_move()) {
-		
+
 		cerr<<"invalid move from player "<<CURRENT_PLAYER<<", he loses!"<<endl;
 		//WARNING: this code does not work well with 4P mode
 		for(Uint8 i = 0 ; i < 8 ; i++)
@@ -247,7 +247,7 @@ void rules::do_move() {
 					blobs.set(i, j, !CURRENT_PLAYER);
 	} else {
 		pthread_mutex_lock(&game->mutex);
-		
+
 		//we don't need selection anymore
 		game->bwboard->unselect_tile(ox, oy);
 		//first check if we need to create a new blob or to move an old one
@@ -279,7 +279,7 @@ void rules::do_move() {
 					blobs.set(nx+i, ny+j, current_player);
 				}
 			}
-		
+
 		pthread_mutex_unlock(&game->mutex);
 	}
 
@@ -305,37 +305,53 @@ void* timer(void*d)
 void rules::compute_move() {
 
 	shmem_init(true);
-	
+
 	string cplayer("0");
 	cplayer[0] = '0'+(CURRENT_PLAYER);
-	
+
 #ifdef DEBUG
-	printf("Now fork: %s %s %s %s\n", "./launchStrategy", blobs.serialize().c_str(), holes.serialize().c_str(), cplayer.c_str());
+  printf(
+    "Now fork: %s %s %s %s %s\n",
+    "./launchStrategy",
+    blobs.serialize().c_str(),
+    holes.serialize().c_str(),
+    cplayer.c_str(),
+    game->strategy_type.data()
+  );
 #endif
+
 	int childPid = fork();
 	//std::cout << "\n" << childPid << "\n";
 	if(childPid == 0) // Child process
 	{
-		execl("./launchStrategy", "./launchStrategy", blobs.serialize().c_str(), holes.serialize().c_str(), cplayer.c_str(), (char *)NULL);
+		execl(
+		  "./launchStrategy",
+			"./launchStrategy",
+			blobs.serialize().c_str(),
+			holes.serialize().c_str(),
+			cplayer.c_str(),
+			game->strategy_type.data(),
+			(char *)NULL
+		);
 	}
-	
+
 	// start timer
 	pthread_t timerThread;
 	pthread_create (&timerThread, NULL, timer, (void*)&childPid);
-	
-	int status;   
+
+	int status;
 	while (wait(&status) != childPid)
 		/* empty */;
 	pthread_cancel(timerThread);
-	
+
 	movement m = shmem_get();
 	ox = m.ox;
 	oy = m.oy;
 	nx = m.nx;
 	ny = m.ny;
-	
-	
-	
+
+
+
 #ifdef DEBUG
 	cout<<"computer computed move from: "<<(Uint32)ox<<","<<(Uint32)oy<<" to "<<(Uint32)nx<<","<<(Uint32)ny<<endl;
 #endif
@@ -355,12 +371,12 @@ void rules::next_turn() {
 	for(Uint16 i = 0 ; i < number_of_players ; i++)
 		alive[i] = false;
 	for(Uint8 x = 0 ; x < 8 ; x++)
-		for(Uint8 y = 0 ; y < 8 ; y++) 
+		for(Uint8 y = 0 ; y < 8 ; y++)
 			if (blobs.get(x, y) != -1)
 				alive[blobs.get(x, y)] = true;
 
 	Uint16 num = 0;
-	for(Uint16 i = 0 ; i < number_of_players ; i++) 
+	for(Uint16 i = 0 ; i < number_of_players ; i++)
 		if (alive[i]) num++;
 
 	bool not_finished = false;
@@ -371,11 +387,11 @@ void rules::next_turn() {
 // #endif
 
 	if (num != 1) {
-	
+
 		//first, check if someone can move (iterate on all empty spaces)
 		for(Uint16 i = 0 ; i < number_of_players ; i++)
 			can_move[i] = false;
-		for(Sint16 x = 0 ; x < 8 ; x++) 
+		for(Sint16 x = 0 ; x < 8 ; x++)
 			for(Sint16 y = 0 ; y < 8 ; y++) {
 				//if a hole we can't move in it, continue
 				if(holes.get(x, y)) continue;
@@ -390,11 +406,11 @@ void rules::next_turn() {
 							can_move[blobs.get(x+i, y+j)] = true;
 					}
 			}
-		
+
 		//now if no one can play any more, game is finished
-		for(Uint16 i = 0 ; i < number_of_players ; i++) 
+		for(Uint16 i = 0 ; i < number_of_players ; i++)
 			not_finished = not_finished || can_move[i];
-	
+
 	}
 
 	if ((!not_finished)||(num == 1)) {
@@ -405,9 +421,9 @@ void rules::next_turn() {
 		while(!can_move[CURRENT_PLAYER]) {
 			turn_number++;
 		}
-	
+
 		//let this player play
-	
+
 		game->set_main_label(colors[CURRENT_PLAYER]+" player's turn");
 		if (players[CURRENT_PLAYER]->is_computer()) {
 			//start computing move
@@ -455,7 +471,7 @@ void rules::end() {
 	for(Uint8 i = 0 ; i < 4 ; i++) {
 		if (max == scores[i]) cnt++;
 	}
-			
+
 	//forward the info to the interfaces
 	if (cnt == 1) {
 		//someone wins

@@ -5,12 +5,12 @@
 #include<unistd.h>
 #include<stdlib.h>
 #include<string.h>
-#include<SDL.h>
-#include<SDL_timer.h>
+#include<SDL/SDL.h>
+#include<SDL/SDL_timer.h>
 #ifdef SOUND
-#include<SDL_mixer.h>
+#include<SDLSDL_mixer.h>
 #endif
-#include<SDL_image.h>
+#include<SDL/SDL_image.h>
 #include<vector>
 #include<list>
 #include<utility>

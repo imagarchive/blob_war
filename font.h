@@ -1,13 +1,13 @@
 #ifndef GFONT
 #define GFONT
 #include"common.h"
-#include <SDL_ttf.h>
+#include <SDL/SDL_ttf.h>
 
 /**this class handles each chars of a font individually,
  * necessary since height differs from char to char*/
 class character {
 	public:
-		//! image builded 
+		//! image builded
 		SDL_Surface *img;
 		//! width of char
 		int x;

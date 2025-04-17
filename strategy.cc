@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <limits>
-#include <filesystem>
+#include <string_view>
 
 void Strategy::applyMove (const movement& mv, bidiarray<Sint16>& blobs) {
 
@@ -33,7 +33,7 @@ void Strategy::applyMove (const movement& mv, bidiarray<Sint16>& blobs) {
                 blobs.set(nx+i, ny+j, oldB);
             }
         }
-		
+
 }
 
 void Strategy::removeMove (const movement& mv, bidiarray<Sint16>& blobs){
@@ -89,44 +89,50 @@ void Strategy::_find_other_player(){
     }
 }
 
-void Strategy::computeBestMove () {
+void Strategy::computeBestMove (std::string_view __strategy_type)
+{
+  //The following code finds a valid move.
+  movement mv(0,0,0,0);
 
-    _find_other_player();
-    _max_level = 1;
-    while (_max_level < 2){
-        movement result = min_max_seq(_blobs,0,_current_player).m;
-        _saveBestMove(result);
-#ifdef DEBUG
-	    cout << "finsh level " << _max_level << endl;
-#endif
-        _max_level += 1;
-    }
-    return;
-
-    //*/
-
-    // To be improved...
-
-    //The following code finds a valid move.
-    movement mv(0,0,0,0);
+  if (__strategy_type == "greedy") {
     //iterate on starting position
+
     for(mv.ox = 0 ; mv.ox < 8 ; mv.ox++) {
-        for(mv.oy = 0 ; mv.oy < 8 ; mv.oy++) {
-            if (_blobs.get(mv.ox, mv.oy) == (int) _current_player) { // blobs
-                //iterate on possible destinations
-                for(mv.nx = std::max(0,mv.ox-2) ; mv.nx <= std::min(7,mv.ox+2) ; mv.nx++) {
-                    for(mv.ny = std::max(0,mv.oy-2) ; mv.ny <= std::min(7,mv.oy+2) ; mv.ny++) {
-                        if (_holes.get(mv.nx, mv.ny)) continue;
-                        if (_blobs.get(mv.nx, mv.ny) == -1) goto end_choice; // blobs
-                    }
-                }
+      for(mv.oy = 0 ; mv.oy < 8 ; mv.oy++) {
+        if (_blobs.get(mv.ox, mv.oy) == (int) _current_player) {
+          //iterate on possible destinations
+
+          for(mv.nx = std::max(0,mv.ox-2) ; mv.nx <= std::min(7,mv.ox+2) ; mv.nx++) {
+            for(mv.ny = std::max(0,mv.oy-2) ; mv.ny <= std::min(7,mv.oy+2) ; mv.ny++) {
+              if (_holes.get(mv.nx, mv.ny)) continue;
+              if (_blobs.get(mv.nx, mv.ny) == -1) goto end_choice;
             }
+          }
         }
+      }
     }
 
 end_choice:
-     _saveBestMove(mv);
-     return;
+    _saveBestMove(mv);
+  } else if (__strategy_type == "min_max") {
+    _find_other_player();
+    _max_level = 1;
+
+    while (true) {
+      movement result = min_max_seq(_blobs,0,_current_player).m;
+      _saveBestMove(result);
+
+#ifdef DEBUG
+	    std::cout << "finsh level " << _max_level << std::endl;
+#endif
+
+      ++_max_level;
+    }
+  } else if (__strategy_type == "alpha_beta") {
+    // TODO: implement alpha_beta
+  } else if (__strategy_type == "alpha_beta_par") {
+    // TODO: implement alpha_beta_par
+  }
 }
 
 movementEval Strategy::min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint16 player)
@@ -162,4 +168,3 @@ movementEval Strategy::min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint1
 
     return eval;
 }
-

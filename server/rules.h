@@ -1,7 +1,7 @@
 #ifndef GRULES
 #define GRULES
 
-#include<SDL.h>
+#include<SDL/SDL.h>
 #include<string>
 #include<fstream>
 
@@ -48,7 +48,7 @@ class rules {
 		//!start a new game
 		rules(string mapname);
 		~rules();
-		//!play move given 
+		//!play move given
 		void do_move();
 		//!generate holes array from map file
 		void parse_map(string mapname);
