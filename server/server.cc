@@ -1,5 +1,5 @@
-#include<SDL.h>
-#include<SDL_net.h>
+#include<SDL/SDL.h>
+#include<SDL/SDL_net.h>
 #include<iostream>
 #include<string.h>
 #include"rules.h"
@@ -91,7 +91,7 @@ void do_move(char* msg, int player) {
 
 	int ox, oy, nx, ny;
 	sscanf(msg+9, "(%d,%d) to (%d,%d)", &ox, &oy, &nx, &ny);
-	
+
 	if (bwrules->set_move(ox, oy, nx, ny)) {
 		//move accepted
 		strcat(msg,"\n");
@@ -101,7 +101,7 @@ void do_move(char* msg, int player) {
 		}
 		if (!game_started) {
 			//game is now ended, reset server
-			end_game();	
+			end_game();
 		}
 	} else {
 		//move refused
@@ -222,7 +222,7 @@ void serverloop(TCPsocket server_socket) {
 					IPaddress *tmp;
 					tmp = SDLNet_TCP_GetPeerAddress(player_sockets[playerid]);
 					cerr<<"new player connection from : "<<SDLNet_ResolveIP(tmp)<<endl;
-		#endif 
+		#endif
 					char startmsg[100];
 					strcpy(startmsg, "/welcome ");
 					strcat(startmsg, mapname);
@@ -245,7 +245,7 @@ void serverloop(TCPsocket server_socket) {
 					if (game_started) {
 						cout<<"player "<<player<<" disconnected during game"<<endl;
 						//disconnect everyone
-						for(int i = 0 ; i < number_of_players ; i++) 
+						for(int i = 0 ; i < number_of_players ; i++)
 							disconnect(i);
 						//end game
 						game_started = false;

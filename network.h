@@ -2,7 +2,7 @@
 #define GNET
 
 #include"common.h"
-#include<SDL_net.h>
+#include<SDL/SDL_net.h>
 
 class network;
 
@@ -54,7 +54,7 @@ class network {
 		//!send move to the server
 		void do_move(Uint8 ox, Uint8 oy, Uint8 nx, Uint8 ny);
 		//!return the type of player used in network games
-		Uint32 get_player_type();	
+		Uint32 get_player_type();
 		//!go through all received messages and execute them all
 		void execute_messages(Uint32 startposition, Uint32 size);
 		//!we received a message, display it
