@@ -1,5 +1,7 @@
 #include "strategy.h"
 
+#include <cstdint>
+#include <limits>
 
 void Strategy::applyMove (const movement& mv) {
         // To be completed...
@@ -50,22 +52,30 @@ end_choice:
      return;
 }
 
-movementEval Strategy::min_max(Uint16 level, int sign){
-    if(level == _max_level) { return movementEval(estimateCurrentScore()); }
-    
-    vector<movement> validMoves = {};
+movementEval Strategy::min_max(Uint16 level, int sign)
+{
+    if (level == _max_level) {
+        return movementEval(estimateCurrentScore());
+    }
+
+    std::vector<movement> validMoves = {};
     validMoves = computeValidMoves(validMoves);
-    
-    movementEval eval(sign * __INT32_MAX__); // TODO check
-    for(movement& mv : validMoves){
+
+    // TODO: check
+    movementEval eval(sign * std::numeric_limits<std::int32_t>::max());
+
+    for(const movement& mv : validMoves){
         applyMove(mv);
-        
+
         movementEval moveEval = min_max(level + 1, -sign);
-        if(sign * eval.eval > sign * moveEval.eval){
+
+        if ((sign * eval.eval) > (sign * moveEval.eval)) {
             eval = moveEval;
         }
+
         removeMove(mv);
     }
+
     return eval;
 }
 
