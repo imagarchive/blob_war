@@ -118,7 +118,7 @@ end_choice:
     _find_other_player();
     _max_level = 1;
 
-    while (_max_level < 2) {
+    while (true) {
       movement result = min_max_seq(_blobs,0,_current_player).m;
       _saveBestMove(result);
 
@@ -145,25 +145,22 @@ movementEval Strategy::min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint1
     std::vector<movement> validMoves = {};
     validMoves = computeValidMoves(validMoves, blobs);
 
-    //std::cout << "\n" << validMoves.size() << "\n";
-
     movementEval eval(sign * std::numeric_limits<std::int32_t>::max());
 
     for(const movement& mv : validMoves){
-        std::cout << "\n" << "TEST : " << blobs.get(mv.ox, mv.oy) << "\n";
-        if(blobs.get(mv.ox, mv.oy) != (int) player) { continue; }
-        std::cout << "\n" << "VALID !!!" << "\n";
-        applyMove(mv, blobs);
 
-        movementEval moveEval = min_max_seq(blobs,level + 1, player == _current_player ? _other_player : _current_player);
-        std::cout << "\n" << eval.eval;
-        std::cout << "\n" << moveEval.eval;
+        if(blobs.get(mv.ox, mv.oy) != (int) player) { continue; }
+
+        bidiarray<Sint16> blobs2 = blobs;
+        applyMove(mv, blobs2);
+
+        movementEval moveEval = min_max_seq(blobs2,level + 1, player == _current_player ? _other_player : _current_player);
         if ((sign * eval.eval) > (sign * moveEval.eval)) {
             eval = moveEval;
             eval.m = mv;
         }
 
-        removeMove(mv, blobs);
+        //removeMove(mv, blobs);
     }
 
     return eval;
