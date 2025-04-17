@@ -118,7 +118,7 @@ end_choice:
     _find_other_player();
     _max_level = 1;
 
-    while (true) {
+    while (_max_level < 2) {
       movement result = min_max_seq(_blobs,0,_current_player).m;
       _saveBestMove(result);
 
