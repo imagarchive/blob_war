@@ -1,4 +1,5 @@
-#include"blobwar.h"
+#include "blobwar.h"
+#include <cstring>
 
 /**
  *	\mainpage Documentation for blobwar
@@ -57,60 +58,69 @@ blobwar *game;
 
 int main(int argc, char **argv)
 {
-	if(argc == 2 ) {
-		if(strcmp(argv[1],"-h")==0) {
-			printf("usage: ./blobwar [-t <time>]\n");
-			printf("	-t <time> let IA compute during <time> (default: 1).\n");
-			exit(0);
+	if (argc == 2) {
+		if (strcmp(argv[1], "-h") == 0) {
+			std::cout << "usage: ./blobwar [-t <time>]" << std::endl;
+			std::cout << "\t-t <time> let IA compute during <time> (default: 1)." << std::endl;
+
+			return 0;
 		}
 	}
-	
+
 	int compute_time_IA = 0;
-	if( argc == 3 ) {
-		if(strcmp(argv[1],"-t")==0) {
-			compute_time_IA = atoi(argv[2]);
+
+	if (argc == 3) {
+		if (std::strcmp(argv[1], "-t") == 0) {
+			compute_time_IA = std::atoi(argv[2]);
 		} else {
-			printf("You don't know how to use this ? ./blobwar -h\n");
-			exit(1);
+			std::cout << "You don't know how to use this ? ./blobwar -h" << std::endl;
+			return 1;
 		}
 	}
-	if(compute_time_IA <= 0)
+
+	if(compute_time_IA <= 0) {
 		compute_time_IA = 1;
-	
+	}
 	
 	Uint32 new_ticks, diff;
+
 #ifdef DEBUG
-	cout << "Starting game" << endl;
+	std::cout << "Starting game" << std::endl;
 #endif
 	
-	//open video, sound, bugs buffer, ....
+	// open video, sound, bugs buffer, ....
 	game = new blobwar();
 	game->compute_time_IA = compute_time_IA;
 
-	//what time is it doc ?
+	// what time is it doc ?
 	game->ticks = SDL_GetTicks();
 
-	//now enter main game loop 
+	// now enter main game loop 
 	while (true) {
-		//handle the game (or try to)
+		// handle the game (or try to)
 		game->handle();
 
-		//we don't update the screen now
-		//wait until we are synchronized
+		// we don't update the screen now
+		// wait until we are synchronized
 
-		//how many time elapsed ?
+		// how many time elapsed ?
 		new_ticks = SDL_GetTicks();
 		diff = new_ticks - game->ticks;
-		//were we quick enough ??
-		if (diff < (1000/game->framerate)) {
-			//yes, haha i've got an 3.4Ghz PC
-			//let's give the extra time back to linux
+
+		// were we quick enough ??
+		if (diff < (1'000 / game->framerate)) {
+			// yes, haha i've got an 3.4Ghz PC
+			// let's give the extra time back to linux
+
 			SDL_Delay((1000/game->framerate) - diff);
 			game->frame++;
 			game->ticks = game->ticks + (1000/game->framerate);
+
 #ifdef ANIMATION
-			//if we have some animations, update display 
-			if ((game->frame % ANIMATIONSPEED)==0) game->display2update = true;
+			// if we have some animations, update display 
+			if ((game->frame % ANIMATIONSPEED) == 0) {
+				game->display2update = true;
+			}
 #endif
 		} else {
 			//no, this bloated box would go faster on wheels
@@ -119,9 +129,10 @@ int main(int argc, char **argv)
 			game->ticks = game->ticks + (1000/game->framerate) * (Uint32) ((diff / (1000/game->framerate)) + 1);
 		}
 
-		//update the screen
+		// update the screen
 		game->update();
 
 	}
+
 	return 0;
 }
