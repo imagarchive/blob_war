@@ -6,7 +6,8 @@
 #include "move.h"
 
 
-/** Move class
+/*
+ * containt the best move and it's eval.
  */
 struct movementEval
 {
@@ -36,6 +37,8 @@ private:
     const bidiarray<bool>& _holes;
     //! Current player
     Uint16 _current_player;
+    //! Other player
+    Uint16 _other_player;
     //! max level
     Uint16 _max_level = 1;
     
@@ -44,10 +47,12 @@ private:
     //! Only the last move saved will be used.
     void (*_saveBestMove)(movement&);
 
+    void _find_other_player();
+
     // implantation of minmax
-    // return the evaluation of the board
-    // and save the best move coresponding to it
-    movementEval min_max(Uint16 level, int sign);    
+    // return the evaluation of the board and the best move coresponding to it
+    movementEval min_max_para(bidiarray<Sint16> blobs, Uint16 level, Uint16 player);
+    movementEval min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint16 player);
 
 public:
         // Constructor from a current situation
@@ -73,24 +78,24 @@ public:
          * Apply a move to the current state of blobs
          * Assumes that the move is valid
          */
-    void applyMove (const movement& mv);
+    void applyMove (const movement& mv, bidiarray<Sint16>& blobs);
 
 
         /** 
          * Apply a move that cancel mv to the current state of blobs
          * Assumes that the move is valid
          */
-    void removeMove (const movement& mv);
+    void removeMove (const movement& mv, bidiarray<Sint16>& blobs);
 
         /**
          * Compute the vector containing every possible moves
          */
-    vector<movement>& computeValidMoves (vector<movement>& valid_moves) const;
+    vector<movement>& computeValidMoves (vector<movement>& valid_moves, bidiarray<Sint16>& blobs) const;
 
         /**
          * Estimate the score of the current state of the game
          */
-    Sint32 estimateCurrentScore () const;
+    Sint32 estimateCurrentScore (bidiarray<Sint16>& blobs) const;
 
         /**
          * Find the best move.

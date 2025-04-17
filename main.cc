@@ -72,6 +72,7 @@ int main(int argc, char **argv)
 	/* CLI option parsing */
 	
 	cli_options cli{};
+	cli.compute_time = 1;
 
 	for (int i = 0; i != argc; ++i) {
 		std::string_view current = argv[i];
