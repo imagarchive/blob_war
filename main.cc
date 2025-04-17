@@ -1,11 +1,11 @@
 #include "blobwar.h"
-#include <cstring>
+#include <string>
 
 /**
  *	\mainpage Documentation for blobwar
  *
- * 	This doxygen manual documents the 
- * 	code of the blobwar game and the 
+ * 	This doxygen manual documents the
+ * 	code of the blobwar game and the
  * 	most important data structures.
  *
  *	\section game Understanding the game
@@ -13,7 +13,7 @@
  * 	Blobwar is a turn by turn strategy game in
  * 	which each player
  * 	controls colored blobs : small spherical
- * 	entities ; and tries to win by finishing 
+ * 	entities ; and tries to win by finishing
  * 	with more blobs than any of his opponents.
  *
  * 	At each turn, a player can select one of his blobs
@@ -24,7 +24,7 @@
  * 	After the move (or the copy), the blob will convert
  * 	any adjacent blob to his color. A small counter at the
  * 	bottom of the screen keeps track of the scores of all
- * 	players. To increase the interest of the game, 
+ * 	players. To increase the interest of the game,
  * 	some boards cells are "holes" and no blob can enter them.
  * 	Different boards with different patterns of holes are
  * 	available to play with.
@@ -46,41 +46,78 @@
  *	to new board cell).
  *
  *	To compute the best move to play, several structures are needed:
- *	-# Strategy::_holes is an array of booleans indicating 
+ *	-# Strategy::_holes is an array of booleans indicating
  *	for each cell whether it is a hole or not.
  *	-# Strategy::_current_player is the number of the player who is playing
  *	-# Strategy::_blobs is the array containing all blobs on the board.
  *
  * */
 
+namespace
+{
+	struct cli_options
+	{
+		bool print_help;
+		int compute_time;
+		StrategyType strategy_type;
+		bool error;
+	};
+}
+
 /** this is the main game variable */
 blobwar *game;
 
 int main(int argc, char **argv)
 {
-	if (argc == 2) {
-		if (strcmp(argv[1], "-h") == 0) {
-			std::cout << "usage: ./blobwar [-t <time>]" << std::endl;
+	/* CLI option parsing */
+	
+	cli_options cli{};
+
+	for (int i = 0; i != argc; ++i) {
+		std::string_view current = argv[i];
+
+		if ((current == "-h") || (current == "--help")) {
+			cli.print_help = true;
+		} else if ((current == "-t") || (current == "--time")) {
+			if (i == (argc - 1)) {
+				cli.error = true;
+			} else {
+				cli.compute_time = std::max(1, std::atoi(argv[++i]));
+			}
+		} else if ((current == "-s") || (current == "--strategy")) {
+			if (i == (argc - 1)) {
+				cli.error = true;
+			} else {
+				std::string_view type = argv[++i];
+
+				if (type == "greedy") {
+					cli.strategy_type = StrategyType::greedy;
+				} else if (type == "minmax") {
+					cli.strategy_type = StrategyType::minmax;
+				} else if (type == "alphabeta") {
+					cli.strategy_type = StrategyType::alphabeta;
+				} else if (type == "alpabeta_par") {
+					cli.strategy_type = StrategyType::alphabeta_par;
+				} else {
+					cli.error = true;
+				}
+			}
+		}
+	}
+
+	if (cli.error) {
+		std::cerr << "Bad input!" << std::endl;
+	}
+
+	if (cli.print_help) {
+			std::cout << "usage: ./blobwar [-t <time>] [-s <strategy>]" << std::endl;
 			std::cout << "\t-t <time> let IA compute during <time> (default: 1)." << std::endl;
+			std::cout << "\t-s <strategy> what strategy to use (default: greedy)." << std::endl;
 
 			return 0;
-		}
 	}
 
-	int compute_time_IA = 0;
-
-	if (argc == 3) {
-		if (std::strcmp(argv[1], "-t") == 0) {
-			compute_time_IA = std::atoi(argv[2]);
-		} else {
-			std::cout << "You don't know how to use this ? ./blobwar -h" << std::endl;
-			return 1;
-		}
-	}
-
-	if(compute_time_IA <= 0) {
-		compute_time_IA = 1;
-	}
+	/* Main processes  */
 	
 	Uint32 new_ticks, diff;
 
@@ -90,12 +127,13 @@ int main(int argc, char **argv)
 	
 	// open video, sound, bugs buffer, ....
 	game = new blobwar();
-	game->compute_time_IA = compute_time_IA;
+	game->compute_time_IA = cli.compute_time;
+	game->strategy_type = cli.strategy_type;
 
 	// what time is it doc ?
 	game->ticks = SDL_GetTicks();
 
-	// now enter main game loop 
+	// now enter main game loop
 	while (true) {
 		// handle the game (or try to)
 		game->handle();
@@ -117,7 +155,7 @@ int main(int argc, char **argv)
 			game->ticks = game->ticks + (1000/game->framerate);
 
 #ifdef ANIMATION
-			// if we have some animations, update display 
+			// if we have some animations, update display
 			if ((game->frame % ANIMATIONSPEED) == 0) {
 				game->display2update = true;
 			}

@@ -16,6 +16,17 @@
 #include"rules.h"
 #include"network.h"
 
+/** A strategy type  */
+
+enum struct StrategyType
+{
+	greedy,
+	minmax,
+	alphabeta,
+	alphabeta_par
+};
+
+
 /** this is the main game class. All objects are stored in it. */
 class blobwar {
 	private:
@@ -103,6 +114,8 @@ class blobwar {
 		font *smallfont;
 		//!The time that IA have to do their computations
 		int compute_time_IA;
+		//! The strategy type
+		StrategyType strategy_type;
 		/// constructor
 		blobwar();
 		/// destructor
