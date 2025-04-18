@@ -41,6 +41,7 @@ void Strategy::removeMove (const movement& mv, bidiarray<Sint16>& blobs){
 }
 
 Sint32 Strategy::estimateCurrentScore (bidiarray<Sint16>& blobs) const {
+    bool end = true;
     Sint32 score = 0;
     for(Uint8 ox = 0 ; ox < 8 ; ox++) {
         for(Uint8 oy = 0 ; oy < 8 ; oy++) {
@@ -48,7 +49,16 @@ Sint32 Strategy::estimateCurrentScore (bidiarray<Sint16>& blobs) const {
                 score += 1;
             }else if (blobs.get(ox, oy) != -1){
                 score -= 1;
+            }else{
+                end = false;
             }
+        }
+    }
+    if(end){
+        if(score > 0) {
+            return std::numeric_limits<std::int32_t>::max()-1;
+        }else if(score < 0){
+            return std::numeric_limits<std::int32_t>::max()*(-1) + 1;
         }
     }
     return score;
@@ -121,6 +131,9 @@ end_choice:
     while (true) {
       movement result = min_max_seq(_blobs,0,_current_player).m;
       _saveBestMove(result);
+      if(result.ox == result.oy && result.oy == result.nx && result.nx == result.ny && result.nx == 0){
+        std::cout << "trouve rien  !";
+      }
 
 #ifdef DEBUG
 	    std::cout << "finsh level " << _max_level << std::endl;
@@ -145,6 +158,10 @@ movementEval Strategy::min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint1
     std::vector<movement> validMoves = {};
     validMoves = computeValidMoves(validMoves, blobs);
 
+    if(validMoves.size() == 0){
+        return movementEval(estimateCurrentScore(blobs));
+    }
+
     movementEval eval(sign * std::numeric_limits<std::int32_t>::max());
 
     for(const movement& mv : validMoves){
@@ -161,6 +178,11 @@ movementEval Strategy::min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint1
         }
 
         //removeMove(mv, blobs);
+    }
+    movement& result = eval.m;
+    if(result.ox == 0 && result.ox == result.oy && result.oy == result.nx && result.nx == result.ny){
+        bidiarray<Sint16> blobs2 = blobs;
+        eval.eval = min_max_seq(blobs2,level + 1, player == _current_player ? _other_player : _current_player).eval;
     }
 
     return eval;
