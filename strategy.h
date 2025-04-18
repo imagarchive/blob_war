@@ -52,8 +52,9 @@ private:
 
     // implantation of minmax
     // return the evaluation of the board and the best move coresponding to it
-    movementEval min_max_para(bidiarray<Sint16> blobs, Uint16 level, Uint16 player);
+    movementEval min_max_para(bidiarray<Sint16>& blobs, Uint16 level, Uint16 player);
     movementEval min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint16 player);
+    movementEval alpha_beta_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint16 player, Sint32 alpha, Sint32 beta);
 
 public:
         // Constructor from a current situation
@@ -96,7 +97,7 @@ public:
         /**
          * Estimate the score of the current state of the game
          */
-    Sint32 estimateCurrentScore (bidiarray<Sint16>& blobs) const;
+    Sint32 estimateCurrentScore (bidiarray<Sint16>& blobs, Uint16 player) const;
 
         /**
          * Find the best move.
