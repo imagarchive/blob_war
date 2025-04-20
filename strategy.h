@@ -97,7 +97,7 @@ public:
         /**
          * Estimate the score of the current state of the game
          */
-    Sint32 estimateCurrentScore (bidiarray<Sint16>& blobs, Uint16 player) const;
+    Sint32 estimateCurrentScore (bidiarray<Sint16>& blobs, Uint16 player, Uint16 level) const;
 
         /**
          * Find the best move.

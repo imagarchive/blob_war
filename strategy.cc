@@ -36,30 +36,30 @@ void Strategy::removeMove (const movement& mv, bidiarray<Sint16>& blobs){
     applyMove(movement(mv.nx,mv.ny,mv.ox,mv.oy), blobs);
 }
 
-Sint32 Strategy::estimateCurrentScore (bidiarray<Sint16>& blobs, Uint16 player) const {
+Sint32 Strategy::estimateCurrentScore (bidiarray<Sint16>& blobs, Uint16 player, Uint16 level) const {
     bool end = true;
     Sint32 score = 0;
     for(Uint8 ox = 0 ; ox < 8 ; ox++) {
         for(Uint8 oy = 0 ; oy < 8 ; oy++) {
             if (_holes.get(ox, oy)) continue;
             if (blobs.get(ox, oy) == (int) _current_player) {
-                score += 1;
+                score += 2;
             }else if (blobs.get(ox, oy) != -1){
-                score -= 1;
+                score -= 2;
             }else{
                 end = false;
                 if(_current_player == 1){continue;} // TODO remove
+                bool b1 = true;
+                bool b2 = true;
                 for(Sint8 i = std::max(ox-2, 0); i < std::min(ox+3, 8) ; i++)
                     for(Sint8 j = std::max(oy-2, 0) ; j < std::min(oy+3, 8)  ; j++) {
                         Sint16 b = blobs.get(i, j);
-                        if (b == (int) _current_player) {
+                        if (b == (int) _current_player && b1) {
                             score += 1;
-                            i = 8;
-                            j = 8;
-                        }else if (b != -1){
+                            b1 = false;
+                        }else if (b != -1 && b2){
                             score -= 1;
-                            i = 8;
-                            j = 8;
+                            b2 = false;
                         }
                     }
             }
@@ -67,10 +67,13 @@ Sint32 Strategy::estimateCurrentScore (bidiarray<Sint16>& blobs, Uint16 player) 
     }
     if(end){
         if(score > 0) {
-            return std::numeric_limits<std::int32_t>::max()-1;
+            //std::cout << "find a win";
+            return std::numeric_limits<std::int32_t>::max() - 1 - level;
         }else if(score < 0){
-            return std::numeric_limits<std::int32_t>::max()*(-1) + 1;
+            //std::cout << "find a lose";
+            return std::numeric_limits<std::int32_t>::max()*(-1) + 1 + level;
         }
+        //std::cout << "find a draw";
     }
     return score;
 }
@@ -178,7 +181,7 @@ movementEval Strategy::min_max_para(bidiarray<Sint16>& blobs, Uint16 level, Uint
     }
 
     if (level == _max_level) {
-        return movementEval(estimateCurrentScore(blobs, player));
+        return movementEval(estimateCurrentScore(blobs, player, level));
     }
 
     Sint16 sign = player == _current_player ? -1 : 1;
@@ -187,7 +190,7 @@ movementEval Strategy::min_max_para(bidiarray<Sint16>& blobs, Uint16 level, Uint
     validMoves = computeValidMoves(validMoves, blobs);
 
     if(validMoves.size() == 0){
-        return movementEval(estimateCurrentScore(blobs, player));
+        return movementEval(estimateCurrentScore(blobs, player, level));
     }
 
     movementEval eval(sign * std::numeric_limits<std::int32_t>::max());
@@ -221,7 +224,7 @@ movementEval Strategy::min_max_para(bidiarray<Sint16>& blobs, Uint16 level, Uint
 movementEval Strategy::min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint16 player)
 {
     if (level == _max_level) {
-        return movementEval(estimateCurrentScore(blobs, player));
+        return movementEval(estimateCurrentScore(blobs, player, level));
     }
 
     Sint16 sign = player == _current_player ? -1 : 1;
@@ -230,7 +233,7 @@ movementEval Strategy::min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint1
     validMoves = computeValidMoves(validMoves, blobs);
 
     if(validMoves.size() == 0){
-        return movementEval(estimateCurrentScore(blobs, player));
+        return movementEval(estimateCurrentScore(blobs, player, level));
     }
 
     movementEval eval(sign * std::numeric_limits<std::int32_t>::max());
@@ -262,7 +265,7 @@ movementEval Strategy::min_max_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint1
 movementEval Strategy::alpha_beta_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint16 player, Sint32 alpha, Sint32 beta)
 {
     if (level == _max_level) {
-        return movementEval(estimateCurrentScore(blobs, player));
+        return movementEval(estimateCurrentScore(blobs, player, level));
     }
 
     Sint16 sign = player == _current_player ? -1 : 1;
@@ -271,7 +274,7 @@ movementEval Strategy::alpha_beta_seq(bidiarray<Sint16>& blobs, Uint16 level, Ui
     validMoves = computeValidMoves(validMoves, blobs);
 
     if(validMoves.size() == 0){
-        return movementEval(estimateCurrentScore(blobs, player));
+        return movementEval(estimateCurrentScore(blobs, player, level));
     }
 
     movementEval eval(sign * std::numeric_limits<std::int32_t>::max());
@@ -300,7 +303,8 @@ movementEval Strategy::alpha_beta_seq(bidiarray<Sint16>& blobs, Uint16 level, Ui
         movement& result = eval.m;
         if(result.ox == 0 && result.ox == result.oy && result.oy == result.nx && result.nx == result.ny){
             bidiarray<Sint16> blobs2 = blobs;
-            eval.eval = alpha_beta_seq(blobs2,level + 1, player == _current_player ? _other_player : _current_player, alpha, beta).eval;
+            //eval.eval = alpha_beta_seq(blobs2,level + 1, player == _current_player ? _other_player : _current_player, alpha, beta).eval;
+            eval.eval = min_max_seq(blobs2,level + 1, player == _current_player ? _other_player : _current_player).eval;
         }
     }else
     {
@@ -326,7 +330,8 @@ movementEval Strategy::alpha_beta_seq(bidiarray<Sint16>& blobs, Uint16 level, Ui
         movement& result = eval.m;
         if(result.ox == 0 && result.ox == result.oy && result.oy == result.nx && result.nx == result.ny){
             bidiarray<Sint16> blobs2 = blobs;
-            eval.eval = alpha_beta_seq(blobs2,level + 1, player == _current_player ? _other_player : _current_player, alpha, beta).eval;
+            //eval.eval = alpha_beta_seq(blobs2,level + 1, player == _current_player ? _other_player : _current_player, alpha, beta).eval;
+            eval.eval = min_max_seq(blobs2,level + 1, player == _current_player ? _other_player : _current_player).eval;
         }
     }
 
