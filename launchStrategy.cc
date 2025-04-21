@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 	shmem_init();
 	func = saveBestMoveToShmem;
 
-	Strategy strategy(blobs, holes, cplayer, func);
+	Strategy strategy(std::move(blobs), std::move(holes), cplayer, func);
 	strategy.computeBestMove(std::move(strategy_type));
 
 	return 0;

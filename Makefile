@@ -14,13 +14,15 @@ CC = g++
 OBJS_ALL = $(sort $(OBJS) $(OBJS_launchComputation))
 
 # Default target: all
-all: blobwar launchStrategy
+all: blobwar benchmark launchStrategy
 
 blobwar: $(OBJS) launchStrategy
 	$(CC) $(OBJS) $(CFLAGS) -o blobwar $(LIBS)
+benchmark: benchmark.o strategy.o
+	$(CC) $^ -O3 `sdl-config --cflags` -DNDEBUG -fopenmp -o benchmark $(LIBS) -lbenchmark
 $(OBJS_ALL):	%.o:	%.cc common.h
 	$(CC) -c $<  $(CFLAGS)
 launchStrategy: $(OBJS_launchComputation)
 	$(CC) $(OBJS_launchComputation) $(CFLAGS) -o launchStrategy $(LIBS)
 clean:
-	rm -f *.o core blobwar launchStrategy *~
+	rm -f *.o core benchmark blobwar launchStrategy *~

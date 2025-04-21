@@ -185,7 +185,7 @@ movementEval Strategy::min_max_para(bidiarray<Sint16>& blobs, Uint16 level, Uint
     }
 
     Sint16 sign = player == _current_player ? -1 : 1;
-    
+
     std::vector<movement> validMoves = {};
     validMoves = computeValidMoves(validMoves, blobs);
 

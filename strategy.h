@@ -30,18 +30,15 @@ struct movementEval
 };
 
 class Strategy {
-
 private:
     //! array containing all blobs on the board
     bidiarray<Sint16> _blobs;
     //! an array of booleans indicating for each cell whether it is a hole or not.
-    const bidiarray<bool>& _holes;
+    bidiarray<bool> _holes;
     //! Current player
     Uint16 _current_player;
     //! Other player
     Uint16 _other_player;
-    //! max level
-    Uint16 _max_level = 1;
 
     //! Call this function to save your best move.
     //! Multiple call can be done each turn,
@@ -49,7 +46,11 @@ private:
     void (*_saveBestMove)(movement&);
 
     void _find_other_player();
+public:
+    //! max level
+    Uint16 _max_level;
 
+public:
     // implantation of minmax
     // return the evaluation of the board and the best move coresponding to it
     movementEval min_max_para(bidiarray<Sint16>& blobs, Uint16 level, Uint16 player);
@@ -57,16 +58,28 @@ private:
     movementEval alpha_beta_seq(bidiarray<Sint16>& blobs, Uint16 level, Uint16 player, Sint32 alpha, Sint32 beta);
 
 public:
-        // Constructor from a current situation
-    Strategy (bidiarray<Sint16>& blobs,
-              const bidiarray<bool>& holes,
-              const Uint16 current_player,
-              void (*saveBestMove)(movement&))
-            : _blobs(blobs),_holes(holes), _current_player(current_player), _saveBestMove(saveBestMove)
-        {
-        }
+    // Constructor from a current situation
+    Strategy(
+        bidiarray<Sint16> blobs,
+        bidiarray<bool> holes,
+        Uint16 current_player,
+        void (*saveBestMove)(movement&),
+        Uint16 max_level = 1
+    )
+        : _blobs(std::move(blobs))
+        , _holes(std::move(holes))
+        , _current_player(current_player)
+        , _saveBestMove(saveBestMove)
+        , _max_level(max_level)
+    {}
 
-
+    Strategy()
+        : _blobs()
+        , _holes()
+        , _current_player(0)
+        , _saveBestMove(nullptr)
+        , _max_level(1)
+    {}
 
         // Copy constructor
     Strategy (const Strategy& St)
